@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Module\Shipping\Domain\Exception\InvalidTransitionException;
 use Module\Shared\Domain\Traits\Timestampable;
 use Module\Shipping\Domain\Exception\CannotCancelWithoutReasonException;
+use Module\Shipping\Domain\Exception\OrderMustHaveItemsException;
 use Ramsey\Uuid\Doctrine\UuidV7Generator;
 
 #[ORM\Entity]
@@ -52,6 +53,10 @@ final class Order {
 
 	public function __construct(string $externalOrderId, string $customerId, Recipient $recipient, Collection $items = new ArrayCollection(), ?string $notes = null)
 	{
+		if ($items->isEmpty()) {
+			throw new OrderMustHaveItemsException();
+		}
+
 		$this->id = null;
 		$this->externalOrderId = $externalOrderId;
 		$this->customerId = $customerId;
