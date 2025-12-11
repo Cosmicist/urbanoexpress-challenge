@@ -8,6 +8,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Error\Renderers\JsonErrorRenderer;
+use Slim\Exception\HttpException;
 use Slim\Psr7\Factory\ResponseFactory;
 
 final class ExceptionMiddleware implements MiddlewareInterface {
@@ -31,6 +32,23 @@ final class ExceptionMiddleware implements MiddlewareInterface {
   ): ResponseInterface {
     try {
       $response = $handler->handle($request);
+		} catch (HttpException $httpException) {
+			$this->logger->warning(
+				sprintf(
+					'%s; Code: %s; File: %s; Line: %s',
+					$httpException->getMessage(),
+					$httpException->getCode(),
+					$httpException->getFile(),
+					$httpException->getLine()
+				),
+				$httpException->getTrace()
+			);
+			$errorBody = ($this->errorRenderer)($httpException, $this->displayErrorDetails);
+			$response = (new ResponseFactory())->createResponse();
+			$response->getBody()->write($errorBody);
+
+			return $response
+				->withStatus($httpException->getCode());
     } catch (\Throwable $exception) {
       $this->logger->error(
         sprintf(
