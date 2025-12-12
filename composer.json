@@ -10,7 +10,8 @@
         "php-di/slim-bridge": "^3.4",
         "hidehalo/nanoid-php": "^2.0",
         "monolog/monolog": "^3.9",
-        "ramsey/uuid-doctrine": "^2.1"
+        "ramsey/uuid-doctrine": "^2.1",
+        "opis/json-schema": "^2.6"
     },
     "autoload": {
         "psr-4": {
