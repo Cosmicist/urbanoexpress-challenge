@@ -1,20 +1,30 @@
 <?php
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Module\Shared\Domain\Email;
 use Module\Shared\Domain\Exception\InvalidEmailException;
 use Module\Shipping\Application\UseCase\CreateOrder\CreateOrderUseCase;
 use Module\Shipping\Application\UseCase\CreateOrder\OrderItemRequest;
 use Module\Shipping\Application\UseCase\CreateOrder\RecipientRequest;
+use Module\Shipping\Domain\Exception\ExternalOrderIdAlreadyExistsException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemPriceException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemQuantityException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemWeightException;
 use Module\Shipping\Domain\Exception\OrderMustHaveItemsException;
 use Module\Shipping\Domain\Order;
+use Module\Shipping\Domain\OrderItem;
+use Module\Shipping\Domain\OrderRepository;
+use Module\Shipping\Domain\Recipient;
 
 describe('CreateOrderUseCase', function () {
 	it('creates an order and returns its ID', function () {
-		$entityManager = Mockery::mock(EntityManager::class);
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
 
+		$entityManager = Mockery::mock(EntityManager::class);
 		$entityManager
 		->shouldReceive('persist')
 		->with(Mockery::on(function ($order) {
@@ -33,7 +43,7 @@ describe('CreateOrderUseCase', function () {
 		$entityManager
 		->shouldReceive('flush');
 
-		$useCase = new CreateOrderUseCase($entityManager);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
 
 		$externalOrderId = 'external-123';
 		$customerId = 'customer-456';
@@ -77,8 +87,13 @@ describe('CreateOrderUseCase', function () {
 	});
 
 	it('throws an exception when no items are provided', function () {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
+
 		$entityManager = Mockery::mock(EntityManager::class);
-		$useCase = new CreateOrderUseCase($entityManager);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
 
 		$externalOrderId = 'external-123';
 		$customerId = 'customer-456';
@@ -105,8 +120,13 @@ describe('CreateOrderUseCase', function () {
 	});
 
 	it('throws an exception when an invalid recipient email is provided', function () {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
+
 		$entityManager = Mockery::mock(EntityManager::class);
-		$useCase = new CreateOrderUseCase($entityManager);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
 
 		$externalOrderId = 'external-123';
 		$customerId = 'customer-456';
@@ -141,8 +161,13 @@ describe('CreateOrderUseCase', function () {
 	});
 
 	it('throws an exception when an invalid item request is provided', function () {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
+
 		$entityManager = Mockery::mock(EntityManager::class);
-		$useCase = new CreateOrderUseCase($entityManager);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
 
 		$externalOrderId = 'external-123';
 		$customerId = 'customer-456';
@@ -169,8 +194,13 @@ describe('CreateOrderUseCase', function () {
 	});
 
 	it('throws an exception when an item has invalid quantity, price, or weight', function ($orderItems, $expectedException) {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
+
 		$entityManager = Mockery::mock(EntityManager::class);
-		$useCase = new CreateOrderUseCase($entityManager);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
 
 		$externalOrderId = 'external-123';
 		$customerId = 'customer-456';
@@ -207,4 +237,61 @@ describe('CreateOrderUseCase', function () {
 			InvalidOrderItemWeightException::class
 		],
 	]);
+
+	it('should throw an exception when external order ID already exists', function () {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(new Order(
+				'external-123',
+				'customer-456',
+				new Recipient(
+					'Jane Doe',
+					'456 Other St',
+					'City',
+					'State',
+					'67890',
+					Email::fromString('jane.doe@example.com'),
+					'555-5678',
+				),
+				new ArrayCollection([
+					new OrderItem('sku-001', 'Product 1', 1, 9.99, 0.5),
+				]),
+			));
+		$entityManager = Mockery::mock(EntityManager::class);
+
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
+
+		$externalOrderId = 'external-123';
+		$customerId = 'customer-456';
+
+		$recipientRequest = new RecipientRequest(
+			'John Doe',
+			'123 Main St',
+			'Anytown',
+			'City',
+			'State',
+			'12345',
+			'555-1234',
+			'john.doe@example.com',
+		);
+		$orderItems = [
+			new OrderItemRequest(
+				'sku-001',
+				'Product 1',
+				2,
+				19.99,
+				1.5
+			),
+		];
+
+		$this->expectException(ExternalOrderIdAlreadyExistsException::class);
+
+		$useCase->execute(
+			$externalOrderId,
+			$customerId,
+			$recipientRequest,
+			$orderItems,
+		);
+	});
 });
