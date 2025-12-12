@@ -8,8 +8,8 @@ use Module\Shared\Infra\Http\Middleware\RequestValidator;
 use Module\Shared\Infra\ModuleBootstrap;
 use Module\Shipping\Domain\Order;
 use Module\Shipping\Domain\OrderRepository;
-use Module\Shipping\Infra\Db\DoctrineOrderRepository;
 use Module\Shipping\Infra\Http\OrderCreateController;
+use Module\Shipping\Infra\Http\OrderGetController;
 use Module\Shipping\Infra\Http\OrderListController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
@@ -23,15 +23,22 @@ final class ShippingModuleBootstrap implements ModuleBootstrap {
 
 	private function defineRoutes(App $app): void {
 		$app->group('/orders', function (RouteCollectorProxy $group) {
+			$group->get('', OrderListController::class);
+
 			$group->post('', OrderCreateController::class)
 						->add(new RequestValidator(bodySchema: $this->getOrderCreateValidationSchema()));
 
-			$group->get('', OrderListController::class);
+			$group->get('/{orderId}', OrderGetController::class)
+						->add(new RequestValidator(routeSchema: $this->getOrderGetValidationSchema()));
 		});
 	}
 
 	private function getOrderCreateValidationSchema(): string {
 		return require __DIR__ . '/Http/validation/orderCreateRequestSchema.php';
+	}
+
+	private function getOrderGetValidationSchema(): string {
+		return require __DIR__ . '/Http/validation/orderGetRequestSchema.php';
 	}
 
 	/** @param App<Container> $app */

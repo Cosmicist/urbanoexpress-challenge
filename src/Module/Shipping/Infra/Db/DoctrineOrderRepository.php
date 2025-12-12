@@ -10,6 +10,19 @@ use Module\Shipping\Domain\OrderRepository;
  * @extends EntityRepository<Order>
  */
 final class DoctrineOrderRepository extends EntityRepository implements OrderRepository {
+	public function findOne(string $id, string $customerId): ?Order {
+		return $this->createQueryBuilder('o')
+			->leftJoin('o.items', 'i')
+			->addSelect('i')
+			->where('o.id = :id')
+			->setParameter('id', $id)
+			->andWhere('o.customerId = :customerId')
+			->setParameter('customerId', $customerId)
+			->setMaxResults(1)
+			->getQuery()
+			->getOneOrNullResult();
+	}
+
 	/** @return Order[] */
 	public function findAllForCustomer(string $customerId): array {
 		return $this->createQueryBuilder('o')
