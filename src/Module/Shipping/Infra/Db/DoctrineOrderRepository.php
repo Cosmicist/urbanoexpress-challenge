@@ -18,7 +18,6 @@ final class DoctrineOrderRepository extends EntityRepository implements OrderRep
 			->setParameter('id', $id)
 			->andWhere('o.customerId = :customerId')
 			->setParameter('customerId', $customerId)
-			->setMaxResults(1)
 			->getQuery()
 			->getOneOrNullResult();
 	}
@@ -31,7 +30,6 @@ final class DoctrineOrderRepository extends EntityRepository implements OrderRep
 			->setParameter('externalOrderId', $externalOrderId)
 			->andWhere('o.customerId = :customerId')
 			->setParameter('customerId', $customerId)
-			->setMaxResults(1)
 			->getQuery()
 			->getOneOrNullResult();
 	}
