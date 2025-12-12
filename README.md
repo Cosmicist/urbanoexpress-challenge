@@ -3,7 +3,7 @@
 ## Setup
 
 Copy `.env.example` to `.env`. It shouldn't be necessary to change any variable.
-Both the app and docker-compose.yml read from the same `.env` file.
+Both the app and `docker-compose.yml` read from the same `.env` file.
 
 ```bash
 cp .env.example .env
@@ -41,7 +41,7 @@ docker exec -it urbano-express-php-1 ./vendor/bin/pest
 ```
 
 > For the sake of brevity I only covered the most important core logic with unit
-> tests. But of course, ideally, all should be covered.
+> tests. But of course, ideally, everything should be covered.
 
 ## User creation
 
@@ -56,6 +56,7 @@ This command will return the user id and access token (randomly generated).
 ## Test client CLI script
 
 I included a simple CLI client script in node that can communicate with the API.
+For the sake of simplicity it also reads the `HOST_PORT` from the `.env` file.
 
 ### Setup
 
@@ -256,7 +257,7 @@ Success:
 }
 ```
 
-Request validation error (orderId is not a UUID):
+Request validation error (`orderId` is not a UUID):
 
 ```json
 {
