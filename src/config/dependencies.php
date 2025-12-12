@@ -3,6 +3,7 @@
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
 use Module\Shared\Infra\Http\Middleware\ExceptionMiddleware;
 use Monolog\Formatter\LineFormatter;
@@ -38,6 +39,8 @@ return [
 			(bool) $settings['displayErrorDetails']
 		);
 	},
+
+	EntityManagerInterface::class => fn (ContainerInterface $c) => $c->get(EntityManager::class),
 
 	EntityManager::class => function (ContainerInterface $c) {
 		$settings = $c->get('settings')['doctrine'];

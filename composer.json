@@ -1,4 +1,7 @@
 {
+    "scripts": {
+        "test": "./vendor/bin/pest"
+    },
     "require": {
         "doctrine/orm": "^3",
         "doctrine/dbal": "^4",
@@ -11,7 +14,8 @@
         "hidehalo/nanoid-php": "^2.0",
         "monolog/monolog": "^3.9",
         "ramsey/uuid-doctrine": "^2.1",
-        "opis/json-schema": "^2.6"
+        "opis/json-schema": "^2.6",
+        "symfony/console": "^7.4"
     },
     "autoload": {
         "psr-4": {
