@@ -9,9 +9,10 @@ use Module\Shipping\Domain\Exception\InvalidTransitionException;
 use Module\Shared\Domain\Traits\Timestampable;
 use Module\Shipping\Domain\Exception\CannotCancelWithoutReasonException;
 use Module\Shipping\Domain\Exception\OrderMustHaveItemsException;
+use Module\Shipping\Infra\Db\DoctrineOrderRepository;
 use Ramsey\Uuid\Doctrine\UuidV7Generator;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: DoctrineOrderRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: 'orders')]
 final class Order {
@@ -23,11 +24,11 @@ final class Order {
 	#[ORM\CustomIdGenerator(class: UuidV7Generator::class)]
 	private(set) ?string $id;
 
-	#[ORM\Column(name: 'external_order_id', type: 'string', unique: true)]
-	private(set) string $externalOrderId;
-
 	#[ORM\Column(name: 'customer_id', type: 'string')]
 	private(set) string $customerId;
+
+	#[ORM\Column(name: 'external_order_id', type: 'string', unique: true)]
+	private(set) string $externalOrderId;
 
 	#[ORM\Embedded(class: OrderStatus::class, columnPrefix: false)]
 	private(set) OrderStatus $status;
@@ -55,6 +56,10 @@ final class Order {
 	{
 		if ($items->isEmpty()) {
 			throw new OrderMustHaveItemsException();
+		}
+
+		foreach ($items as $item) {
+			$item->order = $this;
 		}
 
 		$this->id = null;

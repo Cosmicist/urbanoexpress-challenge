@@ -22,7 +22,8 @@ final class OrderItem {
 	private(set) ?string $id = null;
 
 	#[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'items')]
-	private(set) Order $order;
+	#[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+	public Order $order;
 
 	/** External product SKU of the item */
 	#[ORM\Column(type: 'string', name: 'sku')]
