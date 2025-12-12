@@ -7,6 +7,7 @@ use Module\Shared\Domain\Exception\InvalidEmailException;
 use Module\Shipping\Application\UseCase\CreateOrder\CreateOrderUseCase;
 use Module\Shipping\Application\UseCase\CreateOrder\OrderItemRequest;
 use Module\Shipping\Application\UseCase\CreateOrder\RecipientRequest;
+use Module\Shipping\Domain\Exception\DuplicateOrderSku;
 use Module\Shipping\Domain\Exception\ExternalOrderIdAlreadyExistsException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemPriceException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemQuantityException;
@@ -286,6 +287,54 @@ describe('CreateOrderUseCase', function () {
 		];
 
 		$this->expectException(ExternalOrderIdAlreadyExistsException::class);
+
+		$useCase->execute(
+			$externalOrderId,
+			$customerId,
+			$recipientRequest,
+			$orderItems,
+		);
+	});
+
+	it('throws an exception when duplicate SKUs are provided', function () {
+		$orderRepo = Mockery::mock(OrderRepository::class);
+		$orderRepo
+			->shouldReceive('findByExternalOrderId')
+			->andReturn(null);
+
+		$entityManager = Mockery::mock(EntityManager::class);
+		$useCase = new CreateOrderUseCase($entityManager, $orderRepo);
+
+		$externalOrderId = 'external-123';
+		$customerId = 'customer-456';
+		$recipientRequest = new RecipientRequest(
+			'John Doe',
+			'123 Main St',
+			'Anytown',
+			'City',
+			'State',
+			'12345',
+			'555-1234',
+			'john.doe@example.com',
+		);
+		$orderItems = [
+			new OrderItemRequest(
+				'sku-001',
+				'Product 1',
+				2,
+				19.99,
+				1.5
+			),
+			new OrderItemRequest(
+				'sku-001',
+				'Product 1 Duplicate',
+				1,
+				9.99,
+				0.5
+			),
+		];
+
+		$this->expectException(DuplicateOrderSku::class);
 
 		$useCase->execute(
 			$externalOrderId,

@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Module\Shared\Domain\Email;
 use Module\Shared\Domain\Exception\InvalidEmailException;
+use Module\Shipping\Domain\Exception\DuplicateOrderSku;
 use Module\Shipping\Domain\Exception\InvalidOrderItemPriceException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemQuantityException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemWeightException;
@@ -24,10 +25,12 @@ final class CreateOrderUseCase {
 	 * @return string The ID of the created order
 	 *
 	 * @throws OrderMustHaveItemsException
+	 * @throws ExternalOrderIdAlreadyExistsException
 	 * @throws InvalidOrderItemQuantityException
 	 * @throws InvalidOrderItemPriceException
 	 * @throws InvalidOrderItemWeightException
 	 * @throws InvalidEmailException
+	 * @throws DuplicateOrderSku
 	 * @throws \InvalidArgumentException
 	 */
 	public function execute(
@@ -56,11 +59,17 @@ final class CreateOrderUseCase {
 		);
 
 		$orderItems = new ArrayCollection();
+		$skus = [];
 		foreach ($items as $itemRequest) {
 			if (!($itemRequest instanceof OrderItemRequest)) {
 				throw new \InvalidArgumentException('Invalid item request provided');
 			}
 
+			if (in_array($itemRequest->sku, $skus, true)) {
+				throw new DuplicateOrderSku($itemRequest->sku);
+			}
+
+			$skus[] = $itemRequest->sku;
 			$orderItems->add(
 				new OrderItem(
 					$itemRequest->sku,
