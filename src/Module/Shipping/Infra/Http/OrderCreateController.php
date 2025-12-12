@@ -5,6 +5,7 @@ namespace Module\Shipping\Infra\Http;
 use Module\Shipping\Application\UseCase\CreateOrder\CreateOrderUseCase;
 use Module\Shipping\Application\UseCase\CreateOrder\OrderItemRequest;
 use Module\Shipping\Application\UseCase\CreateOrder\RecipientRequest;
+use Module\User\Domain\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -12,6 +13,8 @@ final class OrderCreateController {
 	public function __construct(private CreateOrderUseCase $createOrderUseCase) {}
 
 	public function __invoke(ServerRequestInterface $request, ResponseInterface $response) {
+		/** @var User */
+		$user = $request->getAttribute('user');
 		$data = $request->getParsedBody();
 
 		$recipient = new RecipientRequest(
@@ -39,7 +42,7 @@ final class OrderCreateController {
 		try {
 			$orderId = $this->createOrderUseCase->execute(
 				externalOrderId: $data['external_order_id'],
-				customerId: 'foo-customer-id', // TODO: Get customer ID from auth context
+				customerId: $user->id, // TODO: Get customer ID from auth context
 				recipient: $recipient,
 				items: $orderItems,
 				notes: $data['notes'] ?? null,
