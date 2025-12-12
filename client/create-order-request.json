@@ -1,0 +1,28 @@
+{
+  "external_order_id": "ext-order-id-123",
+  "notes": "Some optional notes.",
+  "recipient": {
+    "name": "John Doe",
+    "address_1": "Calle Falsa 123",
+    "address_2": "Planta Alta",
+    "city": "San Isidro",
+    "state": "Buenos Aires",
+    "postal_code": "1640"
+  },
+  "items": [
+    {
+      "sku": "ujsdfh823nfd8",
+      "name": "Product A",
+      "quantity": 2,
+      "unit_price": 1500.0,
+      "unit_weight": 125.0
+    },
+    {
+      "sku": "ij390jfd9034s",
+      "name": "Product B",
+      "quantity": 1,
+      "unit_price": 20000.0,
+      "unit_weight": 520.0
+    }
+  ]
+}

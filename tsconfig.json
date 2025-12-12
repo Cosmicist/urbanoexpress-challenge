@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"rootDir": "./client",
+		"target": "ESNext",
+		"module": "NodeNext",
+		"strict": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+		"types": ["node"],
+		"outDir": "./dist",
+		"baseUrl": "./client",
+		"resolveJsonModule": true,
+		"esModuleInterop": true
+	},
+	"exclude": ["node_modules"]
+}
