@@ -24,6 +24,13 @@ final class ExceptionMiddleware implements MiddlewareInterface {
     $this->errorRenderer = $errorRenderer;
     $this->logger = $logger;
     $this->displayErrorDetails = $displayErrorDetails;
+
+		set_error_handler(function (int $severity, string $message, string $file, int $line) {
+			if (!(error_reporting() & $severity)) {
+				return false;
+			}
+			throw new \ErrorException($message, 0, $severity, $file, $line);
+		});
   }
 
   public function process(
@@ -61,7 +68,7 @@ final class ExceptionMiddleware implements MiddlewareInterface {
         $exception->getTrace()
       );
 
-      $errorBody = substr(($this->errorRenderer)($exception, $this->displayErrorDetails), 6); // Remove 'Slim ' prefix
+      $errorBody = str_replace('Slim ', '', ($this->errorRenderer)($exception, $this->displayErrorDetails));
 
       $response = (new ResponseFactory())->createResponse();
       $response->getBody()->write($errorBody);
