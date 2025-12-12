@@ -14,7 +14,7 @@ final class OrderStatus {
 	public const CANCELLED = 'cancelled';
 
 	#[Column(type: 'string', name: 'status')]
-	private $value;
+	private(set) string $value;
 
 	private function __construct(string $value) {
 		$this->value = $value;
@@ -70,12 +70,8 @@ final class OrderStatus {
 
 	// --- Other Methods --- //
 
-	public function getValue(): string {
-		return $this->value;
-	}
-
 	public function equals(OrderStatus $status): bool {
-		return $this->value === $status->getValue();
+		return $this->value === $status->value;
 	}
 
 	public function __toString() {

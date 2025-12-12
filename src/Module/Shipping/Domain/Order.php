@@ -21,23 +21,23 @@ final class Order {
 	#[ORM\Column(type: 'uuid', unique: true)]
 	#[ORM\GeneratedValue(strategy: 'CUSTOM')]
 	#[ORM\CustomIdGenerator(class: UuidV7Generator::class)]
-	public readonly ?string $id;
+	private(set) ?string $id;
 
 	#[ORM\Column(name: 'external_order_id', type: 'string', unique: true)]
-	public readonly string $externalOrderId;
+	private(set) string $externalOrderId;
 
 	#[ORM\Column(name: 'customer_id', type: 'string')]
-	public readonly string $customerId;
+	private(set) string $customerId;
 
 	#[ORM\Embedded(class: OrderStatus::class, columnPrefix: false)]
 	private(set) OrderStatus $status;
 
 	#[ORM\Embedded(class: Recipient::class)]
-	public readonly Recipient $recipient;
+	private(set) Recipient $recipient;
 
 	/** @var Collection<int,OrderItem> */
-	#[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order')]
-	public readonly Collection $items;
+	#[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
+	private(set) Collection $items;
 
 	#[ORM\Column(nullable: true)]
 	public ?string $notes;
@@ -116,7 +116,7 @@ final class Order {
 	 */
 	private function transitionTo(OrderStatus $newStatus): void {
 		if (!$this->canTransitionTo($newStatus)) {
-			throw new InvalidTransitionException($this->status->getValue(), $newStatus->getValue());
+			throw new InvalidTransitionException($this->status->value, $newStatus->value);
 		}
 
 		$this->status = $newStatus;

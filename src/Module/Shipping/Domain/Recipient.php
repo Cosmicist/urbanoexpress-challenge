@@ -44,13 +44,7 @@ final class Recipient {
 
 	public string $fullAddress {
 		get {
-			$address = $this->addressLine1;
-			if ($this->addressLine2) {
-				$address .= ', ' . $this->addressLine2;
-			}
-			$address .= ', ' . $this->city . ', ' . $this->state . ' ' . $this->postalCode;
-
-			return $address;
+			return $this->addressLine1 . ', ' . $this->city . ', ' . $this->state . ' ' . $this->postalCode;
 		}
 	}
 }

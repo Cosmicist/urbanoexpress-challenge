@@ -10,6 +10,7 @@ use Module\Shipping\Domain\Exception\InvalidOrderItemWeightException;
 use Ramsey\Uuid\Doctrine\UuidV7Generator;
 
 #[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: 'order_items')]
 final class OrderItem {
 	use Timestampable;
@@ -18,10 +19,10 @@ final class OrderItem {
 	#[ORM\Column(type: 'uuid', unique: true)]
 	#[ORM\GeneratedValue(strategy: 'CUSTOM')]
 	#[ORM\CustomIdGenerator(class: UuidV7Generator::class)]
-	public readonly ?string $id;
+	private(set) ?string $id = null;
 
 	#[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'items')]
-	public Order $order;
+	private(set) Order $order;
 
 	/** External product SKU of the item */
 	#[ORM\Column(type: 'string', name: 'sku')]
