@@ -23,6 +23,19 @@ final class DoctrineOrderRepository extends EntityRepository implements OrderRep
 			->getOneOrNullResult();
 	}
 
+	public function findByExternalOrderId(string $externalOrderId, string $customerId): ?Order {
+		return $this->createQueryBuilder('o')
+			->leftJoin('o.items', 'i')
+			->addSelect('i')
+			->where('o.externalOrderId = :externalOrderId')
+			->setParameter('externalOrderId', $externalOrderId)
+			->andWhere('o.customerId = :customerId')
+			->setParameter('customerId', $customerId)
+			->setMaxResults(1)
+			->getQuery()
+			->getOneOrNullResult();
+	}
+
 	/** @return Order[] */
 	public function findAllForCustomer(string $customerId): array {
 		return $this->createQueryBuilder('o')

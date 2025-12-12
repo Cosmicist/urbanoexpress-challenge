@@ -9,13 +9,15 @@ use Module\Shared\Domain\Exception\InvalidEmailException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemPriceException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemQuantityException;
 use Module\Shipping\Domain\Exception\InvalidOrderItemWeightException;
+use Module\Shipping\Domain\Exception\ExternalOrderIdAlreadyExistsException;
 use Module\Shipping\Domain\Exception\OrderMustHaveItemsException;
 use Module\Shipping\Domain\Order;
 use Module\Shipping\Domain\OrderItem;
+use Module\Shipping\Domain\OrderRepository;
 use Module\Shipping\Domain\Recipient;
 
 final class CreateOrderUseCase {
-	public function __construct(private EntityManager $em) {}
+	public function __construct(private EntityManager $em, private OrderRepository $orderRepository) {}
 
 	/**
 	 * @param OrderItemRequest[] $items
@@ -35,6 +37,11 @@ final class CreateOrderUseCase {
 		array $items,
 		?string $notes = null
 	): string {
+
+		if ($this->orderRepository->findByExternalOrderId($externalOrderId, $customerId)) {
+			throw new ExternalOrderIdAlreadyExistsException($externalOrderId);
+		}
+
 		$email = $recipient->email ? Email::fromString($recipient->email) : null;
 
 		$recipient = new Recipient(
